@@ -7,7 +7,8 @@
     "start": "webpack-dev-server",
     "build": "webpack",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start-socket-io": "node ./server/start-socket-io.js"
+    "start-socket-io": "node ./server/start-socket-io.js",
+    "start-socket-io-for-serialport": "node ./server/start-socket-io-for-serialport.js"
   },
   "repository": {
     "type": "git",
@@ -29,6 +30,7 @@
     "express": "^4.17.1",
     "react": "^16.8.6",
     "react-dom": "^16.8.6",
+    "serialport": "^7.1.5",
     "socket.io": "^2.2.0",
     "socket.io-client": "^2.2.0",
     "webpack": "^4.31.0",
