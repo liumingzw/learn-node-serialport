@@ -15,7 +15,7 @@ import {
     SP_ON_CLOSE,
     SP_ON_ERROR,
     SP_ON_WRITE
-} from '../../SPEventTypes.js';
+} from '../../share/SPEventTypes.js';
 
 let colorIndex = 0;
 const colors = [

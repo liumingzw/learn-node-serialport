@@ -25,7 +25,7 @@ class ProtocolParser extends events.EventEmitter{
             return;
         }
 
-        console.log('buffer: ', buffer)
+        // console.log('buffer: ', buffer)
         const head0 = buffer[0];
         const head1 = buffer[1];
 
