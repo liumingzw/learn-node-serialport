@@ -1,5 +1,5 @@
-import CmdTypes from './CmdTypes.js';
-import Utils from './Utils.js';
+import cmdTypes from './cmdTypes.js';
+import utils from './utils.js';
 
 const concatCrc = (data) => {
     const crcInt = crc(data);
@@ -73,20 +73,20 @@ const generateCmd = (type, params = {}) => {
         touch_ball_index,
     } = params;
     switch (type) {
-        case CmdTypes.read_firmware_version:
+        case cmdTypes.read_firmware_version:
             frame.push(0xff);
             frame.push(0xee);
             concatCrc(frame);
             break;
 
-        case CmdTypes.read_mc_name_color:
+        case cmdTypes.read_mc_name_color:
             frame.push(0xff);
             frame.push(0x02);
             concatCrc(frame);
             break;
 
-        case CmdTypes.write_mc_name_color:
-            const colorByte = Utils.color2Byte(mc_color);
+        case cmdTypes.write_mc_name_color:
+            const colorByte = utils.color2Byte(mc_color);
             frame.push(0xfb);
             frame.push(0x03);
             frame.push(colorByte);
@@ -101,22 +101,22 @@ const generateCmd = (type, params = {}) => {
             concatCrc(frame);
             break;
 
-        case CmdTypes.read_lua_status:
+        case cmdTypes.read_lua_status:
             frame.push(0x05);
             frame.push(0x06);
             concatCrc(frame);
             break;
 
-        case CmdTypes.write_light:
+        case cmdTypes.write_light:
             break;
 
-        case CmdTypes.read_online_count:
+        case cmdTypes.read_online_count:
             frame.push(0xb0);
             frame.push(0x00);
             concatCrc(frame);
             break;
 
-        case CmdTypes.read_touch_ball:
+        case cmdTypes.read_touch_ball:
             frame.push(0xb0);
             frame.push(0x05);
             frame.push(touch_ball_index);

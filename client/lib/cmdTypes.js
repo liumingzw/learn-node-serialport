@@ -1,7 +1,7 @@
 /**
  * there are 2 kinds of sending cmd: read, write
  */
-const CmdTypes = {
+const cmdTypes = {
     read_firmware_version: 1,
 
     // about firmware upgrade: ignore
@@ -26,5 +26,5 @@ const CmdTypes = {
     read_touch_ball: 11
 };
 
-export default CmdTypes;
+export default cmdTypes;
 

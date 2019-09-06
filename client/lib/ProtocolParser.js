@@ -1,5 +1,5 @@
 import events from 'events';
-import Utils from "./Utils";
+import utils from "./utils";
 
 /**
  * parse the received data from serial port
@@ -51,7 +51,7 @@ class ProtocolParser extends events.EventEmitter{
         }
 
         if (head0 === 0xfb && head1 === 0x02) {
-            const mc_color = Utils.byte2color(buffer[2]);
+            const mc_color = utils.byte2color(buffer[2]);
             const nameByteLen = buffer[3];
             // todo: name
             this.emit(ProtocolParser.onChange, {mc_color, mc_name: 'mabot'});

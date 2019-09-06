@@ -2,7 +2,7 @@ var path = require('path');
 
 module.exports = {
     devtool: 'source-map',
-    entry:  "./client/main.js",
+    entry:  "./client/entry.js",
     output: {
         path: __dirname + "/build",
         filename: "bundle.js"

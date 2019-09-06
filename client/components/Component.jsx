@@ -1,7 +1,7 @@
 import React from 'react';
 import io from 'socket.io-client';
 import generateCmd from '../lib/generateCmd.js';
-import CmdTypes from '../lib/CmdTypes.js';
+import cmdTypes from '../lib/cmdTypes.js';
 import ProtocolParser from '../lib/ProtocolParser.js';
 
 import {
@@ -56,13 +56,13 @@ class Component extends React.Component {
         },
         readFirmwareVersion: () => {
             const event = SP_WRITE;
-            const cmdBuffer = generateCmd(CmdTypes.read_firmware_version);
+            const cmdBuffer = generateCmd(cmdTypes.read_firmware_version);
             const data = {buffer: cmdBuffer};
             this.actions._socketSendData(event, data);
         },
-        setMcNameColor: () => {
+        writeMcNameColor: () => {
             const event = SP_WRITE;
-            const type = CmdTypes.write_mc_name_color;
+            const type = cmdTypes.write_mc_name_color;
             const params = {mc_name: 'test', mc_color: colors[(colorIndex++) % 8]};
             const cmdBuffer = generateCmd(type, params);
             const data = {buffer: cmdBuffer};
@@ -71,7 +71,7 @@ class Component extends React.Component {
         readTouchBall: (index) => {
             const event = SP_WRITE;
             const params = {touch_ball_index: index};
-            const cmdBuffer = generateCmd(CmdTypes.read_touch_ball, params);
+            const cmdBuffer = generateCmd(cmdTypes.read_touch_ball, params);
             const data = {buffer: cmdBuffer};
             this.actions._socketSendData(event, data);
         }
@@ -155,13 +155,13 @@ class Component extends React.Component {
                 <br/><br/>
 
                 <button onClick={actions.readFirmwareVersion}>
-                    read_firmware_version
+                    readFirmwareVersion
                 </button>
 
                 <br/><br/>
 
-                <button onClick={actions.setMcNameColor}>
-                    write_mc_name_color
+                <button onClick={actions.writeMcNameColor}>
+                    writeMcNameColor
                 </button>
 
                 <br/><br/>
