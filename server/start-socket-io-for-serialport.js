@@ -40,7 +40,7 @@ const startStandalone = () => {
                 () => {
                     console.log('-> disconnect');
 
-                    if (port && port.isOpen) {
+                    if (isPortOpen()) {
                         port.close((err) => {
                             if (err) {
                                 client.emit(SP_ON_ERROR, {message: err.message});
