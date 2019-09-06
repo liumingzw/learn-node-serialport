@@ -4,23 +4,10 @@ import generateCmd from '../lib/generateCmd.js';
 import cmdTypes from '../lib/cmdTypes.js';
 import ProtocolParser from '../lib/ProtocolParser.js';
 
-import {
-    SP_LIST_PATHS,
-    SP_OPEN,
-    SP_CLOSE,
-    SP_WRITE,
-    SP_IS_OPENED,
-
-    SP_ON_LIST_PATHS,
-    SP_ON_OPEN,
-    SP_ON_DATA,
-    SP_ON_CLOSE,
-    SP_ON_ERROR,
-    SP_ON_WRITE,
-    SP_ON_IS_OPENED,
-
-    SP_ON_ACTION_ILLEGAL
-} from '../../share/SPEventTypes.js';
+const SP_ACTION = 'SP_ACTION';
+const SP_ON_ACTION = 'SP_ON_ACTION';
+const SP_ON_ACTION_ILLEGAL = 'SP_ON_ACTION_ILLEGAL';
+const SP_ON_ERROR = 'SP_ON_ERROR';
 
 let colorIndex = 0;
 const colors = [
@@ -35,6 +22,9 @@ const colors = [
 ];
 
 const spPath = '/dev/tty.wchusbserial1410';
+const baudRate = 230400;
+
+let writeIndex = 0;
 
 class Component extends React.Component {
     socket = null;
@@ -44,45 +34,38 @@ class Component extends React.Component {
             this.socket.emit(event, data);
         },
         listSerialPortPaths: () => {
-            const event = SP_LIST_PATHS;
-            this.actions._socketSendData(event);
+            const data = {type: 'list'};
+            this.actions._socketSendData(SP_ACTION, data);
         },
         openSerialPort: (path) => {
-            const event = SP_OPEN;
-            path = spPath;
-            const data = {path};
-            this.actions._socketSendData(event, data);
+            const data = {type: 'open', path, baudRate};
+            this.actions._socketSendData(SP_ACTION, data);
         },
         closeSerialPort: (path) => {
-            const event = SP_CLOSE;
-            path = spPath;
-            const data = {path};
-            this.actions._socketSendData(event, data);
+            const data = {type: 'close', path};
+            this.actions._socketSendData(SP_ACTION, data);
         },
         readFirmwareVersion: () => {
-            const event = SP_WRITE;
-            const cmdBuffer = generateCmd(cmdTypes.read_firmware_version);
-            const data = {buffer: cmdBuffer};
-            this.actions._socketSendData(event, data);
+            const buffer = generateCmd(cmdTypes.read_firmware_version);
+            const data = {type: 'write', buffer, writeIndex: writeIndex++};
+            this.actions._socketSendData(SP_ACTION, data);
         },
         writeMcNameColor: () => {
-            const event = SP_WRITE;
             const type = cmdTypes.write_mc_name_color;
             const params = {mc_name: 'test', mc_color: colors[(colorIndex++) % 8]};
-            const cmdBuffer = generateCmd(type, params);
-            const data = {buffer: cmdBuffer};
-            this.actions._socketSendData(event, data);
+            const buffer = generateCmd(type, params);
+            const data = {type: 'write', buffer, writeIndex: writeIndex++};
+            this.actions._socketSendData(SP_ACTION, data);
         },
         readTouchBall: (index) => {
-            const event = SP_WRITE;
             const params = {touch_ball_index: index};
-            const cmdBuffer = generateCmd(cmdTypes.read_touch_ball, params);
-            const data = {buffer: cmdBuffer};
-            this.actions._socketSendData(event, data);
+            const buffer = generateCmd(cmdTypes.read_touch_ball, params);
+            const data = {type: 'write', buffer, writeIndex: writeIndex++};
+            this.actions._socketSendData(SP_ACTION, data);
         },
         isOpenSerialPort: () => {
-            const event = SP_IS_OPENED;
-            this.actions._socketSendData(event);
+            const data = {type: 'isOpened'};
+            this.actions._socketSendData(SP_ACTION, data);
         }
     };
 
@@ -103,35 +86,36 @@ class Component extends React.Component {
     };
 
     setupSerialPortListener = () => {
-        this.socket.on(SP_ON_LIST_PATHS, (data) => {
-            console.log('SP_ON_LIST_PATHS: ' + JSON.stringify(data))
-        });
-        this.socket.on(SP_ON_OPEN, (data) => {
-            console.log('SP_ON_OPEN: ' + JSON.stringify(data))
-        });
-        this.socket.on(SP_ON_DATA, (arr) => {
-            // hex array
-            // console.log('SP_ON_DATA: ' + JSON.stringify(arr));
-            this.protocolParser.parse(arr)
-        });
-        this.socket.on(SP_ON_CLOSE, (data) => {
-            console.log('SP_ON_CLOSE: ' + JSON.stringify(data))
-        });
-        this.socket.on(SP_ON_ERROR, (data) => {
-            console.log('SP_ON_ERROR: ' + JSON.stringify(data))
-        });
-        this.socket.on(SP_ON_WRITE, (data) => {
-            console.log('SP_ON_WRITE: ')
-        });
-
-        this.socket.on(SP_ON_IS_OPENED, (data) => {
-            const {isOpened, path} = data;
-            console.log('SP_ON_IS_OPENED: ' + JSON.stringify(data))
-        });
-
         this.socket.on(SP_ON_ACTION_ILLEGAL, (data) => {
-            const {message} = data;
-            console.log('SP_ON_ACTION_ILLEGAL: ' + JSON.stringify(data))
+            console.log(SP_ON_ACTION_ILLEGAL, data.message)
+        });
+
+        this.socket.on(SP_ON_ERROR, (data) => {
+            console.log(SP_ON_ERROR, data.message)
+        });
+
+        this.socket.on(SP_ON_ACTION, (data) => {
+            switch (data.type) {
+                case 'list':
+                    console.log('list', data.paths);
+                    break;
+                case 'open':
+                    console.log('open', data.path);
+                    break;
+                case 'data':
+                    console.log('data', data.array);
+                    this.protocolParser.parse(data.array);
+                    break;
+                case 'close':
+                    console.log('close', data.path);
+                    break;
+                case 'write':
+                    console.log('write', data.writeIndex);
+                    break;
+                case 'isOpened':
+                    console.log('isOpened', data.path);
+                    break;
+            }
         });
     };
 
@@ -145,7 +129,7 @@ class Component extends React.Component {
                 touch_ball_index,
                 touch_ball_pressed
             } = data;
-            console.log('onChange -> ' + JSON.stringify(data))
+            console.log('mabot onChange -> ' + JSON.stringify(data))
         })
     };
 
@@ -167,13 +151,13 @@ class Component extends React.Component {
 
                 <br/><br/>
 
-                <button onClick={actions.openSerialPort}>
+                <button onClick={() => actions.openSerialPort(spPath)}>
                     openSerialPort
                 </button>
 
                 <br/><br/>
 
-                <button onClick={actions.closeSerialPort}>
+                <button onClick={() => actions.closeSerialPort(spPath)}>
                     closeSerialPort
                 </button>
 

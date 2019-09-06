@@ -15,9 +15,11 @@ class ProtocolParser extends events.EventEmitter{
     }
 
 
-    // 暂时不考虑丢包的情况，不考虑一帧数据可能多次发送的情况
     parse(arr) {
-        this.bufferedArr = this.bufferedArr.concat(arr);
+        // 暂时不考虑丢包的情况，不考虑一帧数据可能多次发送的情况
+        // this.bufferedArr = this.bufferedArr.concat(arr);
+        this.bufferedArr = arr;
+
         let buffer = this.bufferedArr;
 
         // 完整一帧数据至少 4 bytes
