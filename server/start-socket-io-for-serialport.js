@@ -32,10 +32,10 @@ const startStandalone = () => {
 
     io.on(
         'connection',
-        client => {
+        socket => {
             console.log('-> connection');
 
-            client.on(
+            socket.on(
                 'disconnect',
                 () => {
                     console.log('-> disconnect');
@@ -43,14 +43,14 @@ const startStandalone = () => {
                     if (isPortOpen()) {
                         port.close((err) => {
                             if (err) {
-                                client.emit(SP_ON_ERROR, {message: err.message});
+                                socket.emit(SP_ON_ERROR, {message: err.message});
                             }
                         })
                     }
                 }
             );
 
-            client.on(
+            socket.on(
                 SP_LIST_PATHS,
                 () => {
                     SerialPort.list((err, ports) => {
@@ -61,12 +61,12 @@ const startStandalone = () => {
                         const portPaths = ports.map(item => {
                             return item.comName;
                         });
-                        client.emit(SP_ON_LIST_PATHS, portPaths);
+                        socket.emit(SP_ON_LIST_PATHS, portPaths);
                     });
                 }
             );
 
-            client.on(
+            socket.on(
                 SP_IS_OPENED,
                 () => {
                     const isOpened = isPortOpen();
@@ -74,15 +74,15 @@ const startStandalone = () => {
                     if (isOpened) {
                         path = port.path;
                     }
-                    client.emit(SP_ON_IS_OPENED, {isOpened, path});
+                    socket.emit(SP_ON_IS_OPENED, {isOpened, path});
                 }
             );
 
-            client.on(
+            socket.on(
                 SP_OPEN,
                 (data) => {
                     if (isPortOpen()) {
-                        client.emit(SP_ON_ACTION_ILLEGAL, {message: 'Do not re-open'});
+                        socket.emit(SP_ON_ACTION_ILLEGAL, {message: 'Do not re-open'});
                         return;
                     }
 
@@ -91,7 +91,7 @@ const startStandalone = () => {
 
                     // Open errors will be emitted as an error event
                     port.on('error', (err) => {
-                        client.emit(SP_ON_ERROR, {message: err.message});
+                        socket.emit(SP_ON_ERROR, {message: err.message});
                     });
 
                     port.on('data', (buffer) => {
@@ -102,46 +102,46 @@ const startStandalone = () => {
                             arr.push(buffer[i]);
                         }
                         // console.log('arr: ' + arr)
-                        client.emit(SP_ON_DATA, arr);
+                        socket.emit(SP_ON_DATA, arr);
                     });
 
                     port.on('close', () => {
-                        client.emit(SP_ON_CLOSE, {path});
+                        socket.emit(SP_ON_CLOSE, {path});
                     });
 
                     port.on('open', () => {
-                        client.emit(SP_ON_OPEN, {path});
+                        socket.emit(SP_ON_OPEN, {path});
                     });
 
                     port.open();
                 }
             );
 
-            client.on(
+            socket.on(
                 SP_CLOSE,
                 () => {
                     if (!isPortOpen()) {
-                        client.emit(SP_ON_ACTION_ILLEGAL, {message: 'No port opened'});
+                        socket.emit(SP_ON_ACTION_ILLEGAL, {message: 'No port opened'});
                         return;
                     }
 
                     port.close((err) => {
                         if (err) {
-                            client.emit(SP_ON_ERROR, {message: err.message});
+                            socket.emit(SP_ON_ERROR, {message: err.message});
                         }
                     })
                 }
             );
 
-            client.on(
+            socket.on(
                 SP_WRITE,
                 (data) => {
                     const {buffer} = data;
                     port.write(buffer, (err) => {
                         if (err) {
-                            client.emit(SP_ON_ERROR, {message: err.message});
+                            socket.emit(SP_ON_ERROR, {message: err.message});
                         } else {
-                            client.emit(SP_ON_WRITE);
+                            socket.emit(SP_ON_WRITE);
                         }
                     })
                 }
