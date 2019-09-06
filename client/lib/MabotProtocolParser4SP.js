@@ -1,12 +1,13 @@
 import events from 'events';
 import CmdTypes from './CmdTypes.js';
+import protocolEventTypes from '../lib/MabotProtocolParserEventTypes.js';
 
 /**
  * parse the received data from serial port
  * only for mabot
  * the control protocol of mabot(need authority): https://www.yuque.com/cnnpzh/uxtq2p/tux8ow
  */
-class DataParser4SerialPort extends events.EventEmitter{
+class MabotProtocolParser4SP extends events.EventEmitter{
     constructor() {
         super();
         this._bufferedArr = [];
@@ -36,10 +37,10 @@ class DataParser4SerialPort extends events.EventEmitter{
         switch (cmdType) {
             case CmdTypes.reply_firmware_version:
                 const firmwareVersion = '0' + bufferedArr[3] + '-' + '0' + bufferedArr[2]
-                this.emit('firmwareVersion', firmwareVersion);
+                this.emit(protocolEventTypes.firmwareVersion, firmwareVersion);
                 break;
         }
     }
 }
 
-export default DataParser4SerialPort;
+export default MabotProtocolParser4SP;

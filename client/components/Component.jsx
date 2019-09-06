@@ -2,7 +2,8 @@ import React from 'react';
 import io from 'socket.io-client';
 import generateCmd from '../lib/generateCmd.js';
 import CmdTypes from '../lib/CmdTypes.js';
-import DataParser from '../lib/DataParser4SerialPort.js';
+import ProtocolParser from '../lib/MabotProtocolParser4SP.js';
+import protocolEventTypes from '../lib/MabotProtocolParserEventTypes.js';
 
 import {
     SP_LIST_NAMES,
@@ -15,8 +16,9 @@ import {
     SP_ON_CLOSE,
     SP_ON_ERROR,
     SP_ON_WRITE
-} from '../../serialPortEventTypes.js';
+} from '../../SPEventTypes.js';
 
+let colorIndex = 0;
 const colors = [
     'red',
     'green',
@@ -28,11 +30,9 @@ const colors = [
     'white'
 ];
 
-let colorIndex = 0;
-
 class Component extends React.Component {
     socket = null;
-    dataParser = new DataParser();
+    protocolParser = new ProtocolParser();
     actions = {
         _socketSendData: (event, data) => {
             this.socket.emit(event, data);
@@ -72,10 +72,7 @@ class Component extends React.Component {
     componentDidMount() {
         this.setupSocket();
         this.setupSerialPortListener();
-
-        this.dataParser.on('firmwareVersion', (firmwareVersion) => {
-            console.log('firmwareVersion -> ' + firmwareVersion)
-        })
+        this.setupProtocolParserListener();
     }
 
     setupSocket = () => {
@@ -98,7 +95,7 @@ class Component extends React.Component {
         this.socket.on(SP_ON_DATA, (arr) => {
             // hex array
             console.log('SP_ON_DATA: ' + JSON.stringify(arr));
-            this.dataParser.parse(arr)
+            this.protocolParser.parse(arr)
         });
         this.socket.on(SP_ON_CLOSE, (data) => {
             console.log('SP_ON_CLOSE: ' + JSON.stringify(data))
@@ -111,6 +108,12 @@ class Component extends React.Component {
         });
     };
 
+    setupProtocolParserListener = () => {
+        this.protocolParser.on(protocolEventTypes.firmwareVersion, (firmwareVersion) => {
+            console.log('firmwareVersion -> ' + firmwareVersion)
+        })
+    };
+
     render() {
         const actions = this.actions;
         return (
@@ -121,25 +124,25 @@ class Component extends React.Component {
                     SerialPort:list-names
                 </button>
 
-                <br/>
+                <br/><br/>
 
                 <button onClick={actions.openSerialPort}>
                     SerialPort:open
                 </button>
 
-                <br/>
+                <br/><br/>
 
                 <button onClick={actions.closeSerialPort}>
                     SerialPort:close
                 </button>
 
-                <br/>
+                <br/><br/>
 
                 <button onClick={actions.readFirmwareVersion}>
                     read_firmware_version
                 </button>
 
-                <br/>
+                <br/><br/>
 
                 <button onClick={actions.setMcNameColor}>
                     set_mc_name_color
