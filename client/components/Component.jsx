@@ -9,12 +9,17 @@ import {
     SP_OPEN,
     SP_CLOSE,
     SP_WRITE,
+    SP_IS_OPENED,
+
     SP_ON_LIST_NAMES,
     SP_ON_OPEN,
     SP_ON_DATA,
     SP_ON_CLOSE,
     SP_ON_ERROR,
-    SP_ON_WRITE
+    SP_ON_WRITE,
+    SP_ON_IS_OPENED,
+
+    SP_ON_ACTION_ILLEGAL
 } from '../../share/SPEventTypes.js';
 
 let colorIndex = 0;
@@ -74,6 +79,10 @@ class Component extends React.Component {
             const cmdBuffer = generateCmd(cmdTypes.read_touch_ball, params);
             const data = {buffer: cmdBuffer};
             this.actions._socketSendData(event, data);
+        },
+        isOpenSerialPort: () => {
+            const event = SP_IS_OPENED;
+            this.actions._socketSendData(event);
         }
     };
 
@@ -114,6 +123,16 @@ class Component extends React.Component {
         this.socket.on(SP_ON_WRITE, (data) => {
             console.log('SP_ON_WRITE: ')
         });
+
+        this.socket.on(SP_ON_IS_OPENED, (data) => {
+            const {isOpened, path} = data;
+            console.log('SP_ON_IS_OPENED: ' + JSON.stringify(data))
+        });
+
+        this.socket.on(SP_ON_ACTION_ILLEGAL, (data) => {
+            const {message} = data;
+            console.log('SP_ON_ACTION_ILLEGAL: ' + JSON.stringify(data))
+        });
     };
 
     setupProtocolParserListener = () => {
@@ -137,19 +156,25 @@ class Component extends React.Component {
                 <h2>Learn how to use socket.io and socket.io-client</h2>
 
                 <button onClick={actions.listSerialPortNames}>
-                    SerialPort:list-names
+                    listSerialPortNames
+                </button>
+
+                <br/><br/>
+
+                <button onClick={actions.isOpenSerialPort}>
+                    isOpenSerialPort
                 </button>
 
                 <br/><br/>
 
                 <button onClick={actions.openSerialPort}>
-                    SerialPort:open
+                    openSerialPort
                 </button>
 
                 <br/><br/>
 
                 <button onClick={actions.closeSerialPort}>
-                    SerialPort:close
+                    closeSerialPort
                 </button>
 
                 <br/><br/>
