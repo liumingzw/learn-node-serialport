@@ -5,13 +5,13 @@ import cmdTypes from '../lib/cmdTypes.js';
 import ProtocolParser from '../lib/ProtocolParser.js';
 
 import {
-    SP_LIST_NAMES,
+    SP_LIST_PATHS,
     SP_OPEN,
     SP_CLOSE,
     SP_WRITE,
     SP_IS_OPENED,
 
-    SP_ON_LIST_NAMES,
+    SP_ON_LIST_PATHS,
     SP_ON_OPEN,
     SP_ON_DATA,
     SP_ON_CLOSE,
@@ -34,7 +34,7 @@ const colors = [
     'white'
 ];
 
-const spName = '/dev/tty.wchusbserial1410';
+const spPath = '/dev/tty.wchusbserial1410';
 
 class Component extends React.Component {
     socket = null;
@@ -43,20 +43,20 @@ class Component extends React.Component {
         _socketSendData: (event, data) => {
             this.socket.emit(event, data);
         },
-        listSerialPortNames: () => {
-            const event = SP_LIST_NAMES;
+        listSerialPortPaths: () => {
+            const event = SP_LIST_PATHS;
             this.actions._socketSendData(event);
         },
-        openSerialPort: (name) => {
+        openSerialPort: (path) => {
             const event = SP_OPEN;
-            name = spName;
-            const data = {name};
+            path = spPath;
+            const data = {path};
             this.actions._socketSendData(event, data);
         },
-        closeSerialPort: (name) => {
+        closeSerialPort: (path) => {
             const event = SP_CLOSE;
-            name = spName;
-            const data = {name};
+            path = spPath;
+            const data = {path};
             this.actions._socketSendData(event, data);
         },
         readFirmwareVersion: () => {
@@ -103,8 +103,8 @@ class Component extends React.Component {
     };
 
     setupSerialPortListener = () => {
-        this.socket.on(SP_ON_LIST_NAMES, (data) => {
-            console.log('SP_ON_LIST_NAMES: ' + JSON.stringify(data))
+        this.socket.on(SP_ON_LIST_PATHS, (data) => {
+            console.log('SP_ON_LIST_PATHS: ' + JSON.stringify(data))
         });
         this.socket.on(SP_ON_OPEN, (data) => {
             console.log('SP_ON_OPEN: ' + JSON.stringify(data))
@@ -155,8 +155,8 @@ class Component extends React.Component {
             <div>
                 <h2>Learn how to use socket.io and socket.io-client</h2>
 
-                <button onClick={actions.listSerialPortNames}>
-                    listSerialPortNames
+                <button onClick={actions.listSerialPortPaths}>
+                    listSerialPortPaths
                 </button>
 
                 <br/><br/>

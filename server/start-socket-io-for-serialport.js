@@ -5,13 +5,13 @@ const socketPort = 3000;
 const baudRate = 230400;
 const autoOpen = false;
 
-const SP_LIST_NAMES = 'SP_LIST_NAMES';
+const SP_LIST_PATHS = 'SP_LIST_PATHS';
 const SP_OPEN = 'SP_OPEN';
 const SP_CLOSE = 'SP_CLOSE';
 const SP_WRITE = 'SP_WRITE';
 const SP_IS_OPENED = 'SP_IS_OPENED';
 
-const SP_ON_LIST_NAMES = 'SP_ON_LIST_NAMES';
+const SP_ON_LIST_PATHS = 'SP_ON_LIST_PATHS';
 
 const SP_ON_OPEN = 'SP_ON_OPEN';
 const SP_ON_DATA = 'SP_ON_DATA';
@@ -51,17 +51,17 @@ const startStandalone = () => {
             );
 
             client.on(
-                SP_LIST_NAMES,
+                SP_LIST_PATHS,
                 () => {
                     SerialPort.list((err, ports) => {
                         if (err) {
                             console.error(err);
                             return;
                         }
-                        const portNames = ports.map(item => {
+                        const portPaths = ports.map(item => {
                             return item.comName;
                         });
-                        client.emit(SP_ON_LIST_NAMES, portNames);
+                        client.emit(SP_ON_LIST_PATHS, portPaths);
                     });
                 }
             );
@@ -86,11 +86,8 @@ const startStandalone = () => {
                         return;
                     }
 
-                    const {name} = data;
-                    port = new SerialPort(name, {
-                        baudRate: baudRate,
-                        autoOpen: autoOpen
-                    });
+                    const {path} = data;
+                    port = new SerialPort(path, {baudRate: baudRate, autoOpen: autoOpen});
 
                     // Open errors will be emitted as an error event
                     port.on('error', (err) => {
@@ -101,7 +98,7 @@ const startStandalone = () => {
                         // console.log('buffer: ', buffer.length)
                         // console.log(Buffer.isBuffer(buffer))
                         const arr = [];
-                        for (let i = 0; i < buffer.length; i++){
+                        for (let i = 0; i < buffer.length; i++) {
                             arr.push(buffer[i]);
                         }
                         // console.log('arr: ' + arr)
@@ -109,11 +106,11 @@ const startStandalone = () => {
                     });
 
                     port.on('close', () => {
-                        client.emit(SP_ON_CLOSE, {name});
+                        client.emit(SP_ON_CLOSE, {path});
                     });
 
                     port.on('open', () => {
-                        client.emit(SP_ON_OPEN, {name});
+                        client.emit(SP_ON_OPEN, {path});
                     });
 
                     port.open();
