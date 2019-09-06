@@ -21,8 +21,10 @@ const color2Byte = (color) => {
     }
 };
 
-const byte2color2 = (byte) => {
+const byte2color = (byte) => {
     switch (byte) {
+        case 0x00:
+            return 'null'; // not set
         case 0x01:
             return 'red';
         case 0x02:
@@ -46,5 +48,5 @@ const byte2color2 = (byte) => {
 
 export default {
     color2Byte,
-    byte2color2
+    byte2color
 }

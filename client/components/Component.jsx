@@ -2,8 +2,7 @@ import React from 'react';
 import io from 'socket.io-client';
 import generateCmd from '../lib/generateCmd.js';
 import CmdTypes from '../lib/CmdTypes.js';
-import ProtocolParser from '../lib/MabotProtocolParser4SP.js';
-import protocolEventTypes from '../lib/MabotProtocolParserEventTypes.js';
+import ProtocolParser from '../lib/ProtocolParser.js';
 
 import {
     SP_LIST_NAMES,
@@ -30,6 +29,8 @@ const colors = [
     'white'
 ];
 
+const spName = '/dev/tty.wchusbserial1410';
+
 class Component extends React.Component {
     socket = null;
     protocolParser = new ProtocolParser();
@@ -43,13 +44,13 @@ class Component extends React.Component {
         },
         openSerialPort: (name) => {
             const event = SP_OPEN;
-            name = '/dev/tty.wchusbserial1410';
+            name = spName;
             const data = {name};
             this.actions._socketSendData(event, data);
         },
         closeSerialPort: (name) => {
             const event = SP_CLOSE;
-            name = '/dev/tty.wchusbserial1410';
+            name = spName;
             const data = {name};
             this.actions._socketSendData(event, data);
         },
@@ -61,12 +62,19 @@ class Component extends React.Component {
         },
         setMcNameColor: () => {
             const event = SP_WRITE;
-            const type = CmdTypes.set_mc_name_color;
-            const params = {name: 'test', color: colors[(colorIndex++)%8]};
+            const type = CmdTypes.write_mc_name_color;
+            const params = {mc_name: 'test', mc_color: colors[(colorIndex++) % 8]};
             const cmdBuffer = generateCmd(type, params);
-            const data = {buffer: cmdBuffer}
+            const data = {buffer: cmdBuffer};
             this.actions._socketSendData(event, data);
         },
+        readTouchBall: (index) => {
+            const event = SP_WRITE;
+            const params = {touch_ball_index: index};
+            const cmdBuffer = generateCmd(CmdTypes.read_touch_ball, params);
+            const data = {buffer: cmdBuffer};
+            this.actions._socketSendData(event, data);
+        }
     };
 
     componentDidMount() {
@@ -94,7 +102,7 @@ class Component extends React.Component {
         });
         this.socket.on(SP_ON_DATA, (arr) => {
             // hex array
-            console.log('SP_ON_DATA: ' + JSON.stringify(arr));
+            // console.log('SP_ON_DATA: ' + JSON.stringify(arr));
             this.protocolParser.parse(arr)
         });
         this.socket.on(SP_ON_CLOSE, (data) => {
@@ -109,8 +117,16 @@ class Component extends React.Component {
     };
 
     setupProtocolParserListener = () => {
-        this.protocolParser.on(protocolEventTypes.firmwareVersion, (firmwareVersion) => {
-            console.log('firmwareVersion -> ' + firmwareVersion)
+        this.protocolParser.on(ProtocolParser.onChange, (data) => {
+            const {
+                firmwareVersion,
+                mc_color,
+                mc_name,
+                mc_name_color_write_succeed,
+                touch_ball_index,
+                touch_ball_pressed
+            } = data;
+            console.log('onChange -> ' + JSON.stringify(data))
         })
     };
 
@@ -145,7 +161,23 @@ class Component extends React.Component {
                 <br/><br/>
 
                 <button onClick={actions.setMcNameColor}>
-                    set_mc_name_color
+                    write_mc_name_color
+                </button>
+
+                <br/><br/>
+
+                <button onClick={() => {
+                    actions.readTouchBall(1)
+                }}>
+                    readTouchBall 1
+                </button>
+
+                <br/><br/>
+
+                <button onClick={() => {
+                    actions.readTouchBall(2)
+                }}>
+                    readTouchBall 2
                 </button>
             </div>
         )

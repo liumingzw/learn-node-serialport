@@ -54,9 +54,24 @@ const crc = (bytes, previous) => {
     return crc;
 };
 
-const generateCmd = (type, params) => {
+/**
+ * params 的数据格式：是 ProtocolParser.js 返回的数据的子集
+ * {
+ *     firmwareVersion,
+ *
+ *     mc_color,
+ *     mc_name,
+ *
+ *     touch_ball_index,
+ * }
+ */
+const generateCmd = (type, params = {}) => {
     const frame = [];
-
+    const {
+        mc_color = 'white',
+        mc_name,
+        touch_ball_index,
+    } = params;
     switch (type) {
         case CmdTypes.read_firmware_version:
             frame.push(0xff);
@@ -64,13 +79,19 @@ const generateCmd = (type, params) => {
             concatCrc(frame);
             break;
 
-        case CmdTypes.set_mc_name_color:
-            const {name, color = 'red'} = params;
-            const colorByte = Utils.color2Byte(color);
+        case CmdTypes.read_mc_name_color:
+            frame.push(0xff);
+            frame.push(0x02);
+            concatCrc(frame);
+            break;
+
+        case CmdTypes.write_mc_name_color:
+            const colorByte = Utils.color2Byte(mc_color);
             frame.push(0xfb);
             frame.push(0x03);
             frame.push(colorByte);
 
+            // name 暂时不起作用
             frame.push(0x04);
             frame.push(0xc7);
             frame.push(0xb3);
@@ -79,11 +100,32 @@ const generateCmd = (type, params) => {
 
             concatCrc(frame);
             break;
+
+        case CmdTypes.read_lua_status:
+            frame.push(0x05);
+            frame.push(0x06);
+            concatCrc(frame);
+            break;
+
+        case CmdTypes.write_light:
+            break;
+
+        case CmdTypes.read_online_count:
+            frame.push(0xb0);
+            frame.push(0x00);
+            concatCrc(frame);
+            break;
+
+        case CmdTypes.read_touch_ball:
+            frame.push(0xb0);
+            frame.push(0x05);
+            frame.push(touch_ball_index);
+            concatCrc(frame);
+            break;
     }
 
     const buffer = new Buffer(frame);
     return buffer;
 };
-
 
 export default generateCmd;
